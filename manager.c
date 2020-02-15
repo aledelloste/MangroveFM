@@ -4,13 +4,26 @@
 #include <dirent.h>
 #include <string.h>
 
+//Use set_parent to set parent dir in path
+int set_parent(char *path){
+    int len = strlen(path);
+    if(len == 1)
+        return 0;
+    for(int i = len-2; i >= 0; i--){
+        if(path[i] == '/'){
+            path[i+1] = '\0';
+            return 0;
+        }
+    }
+    return 1;
+}
+
 int main(int argc, char *argv[]){
     int loop = 1, c;
     int w, h;
 
     int path_size = 20;
     char *path = calloc(path_size, sizeof(char));
-    char *prev_path = calloc(path_size, sizeof(char));
     strcpy(path, "/");
     DIR *cur_dir;
     struct dirent *dir_content = malloc(sizeof(struct dirent));
@@ -39,6 +52,7 @@ int main(int argc, char *argv[]){
         noecho();
         curs_set(0);
 
+        werase(path_win);
         mvwprintw(path_win, 0, 0, "%s", path);
         wrefresh(path_win);
 
@@ -77,6 +91,8 @@ int main(int argc, char *argv[]){
                     break;
                 if(c == 'c')
                     break;
+                if(c == 8)
+                    break;
                 switch (c) {
                     case KEY_UP:
                     case 'u':
@@ -100,13 +116,15 @@ int main(int argc, char *argv[]){
                             path_size *= 2;
                             path = realloc(path, path_size*sizeof(char));
                         }
-                        strcpy(prev_path, path);
                         strcat(path, selected);
                         strcat(path, "/");
                     }else{
-                        strcpy(path, prev_path);
+                        set_parent(path);
                     }
                 }
+            }
+            if(c == 8){
+                set_parent(path);
             }
             if(c == 'c'){
                 werase(command_win);
@@ -127,7 +145,7 @@ int main(int argc, char *argv[]){
         }else{
             wprintw(command_win, "%s is not a directory", selected);
             wrefresh(command_win);
-            strcpy(path, prev_path);
+            set_parent(path);
         }
     }
     //Free space for contents
