@@ -18,6 +18,10 @@ int set_parent(char *path){
     return 1;
 }
 
+int ex_command(char *command){
+    return 0;
+}
+
 int main(int argc, char *argv[]){
     int loop = 1, c;
     int w, h;
@@ -132,6 +136,7 @@ int main(int argc, char *argv[]){
                 curs_set(1);
                 echo();
                 wscanw(command_win, "%s", command);
+                ex_command(command);
                 wrefresh(command_win);
                 //fprintf(log, "insert: %s\n", command);
             }
