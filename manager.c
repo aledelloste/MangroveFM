@@ -23,7 +23,7 @@ int main(int argc, char *argv[]){
     ITEM **dir_row;
     MENU *list;
 
-    FILE *log = fopen("log.txt", "w");
+    //FILE *log = fopen("log.txt", "w");
 
     initscr();
     getmaxyx(stdscr, h, w);
@@ -115,7 +115,7 @@ int main(int argc, char *argv[]){
                 echo();
                 wscanw(command_win, "%s", command);
                 wrefresh(command_win);
-                fprintf(log, "insert: %s\n", command);
+                //fprintf(log, "insert: %s\n", command);
             }
 
             if(c == 'q')
@@ -139,6 +139,6 @@ int main(int argc, char *argv[]){
 
     delwin(finder);
     endwin();
-    fclose(log);
+    //fclose(log);
     return 0;
 }
