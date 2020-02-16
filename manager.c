@@ -4,37 +4,9 @@
 #include <dirent.h>
 #include <string.h>
 
-//Use set_parent to set parent dir in path
-int set_parent(char *path){
-    int len = strlen(path);
-    if(len == 1)
-        return 0;
-    for(int i = len-2; i >= 0; i--){
-        if(path[i] == '/'){
-            path[i+1] = '\0';
-            return 0;
-        }
-    }
-    return 1;
-}
-
-int split(char *string, char **splitted){
-    char *tmp;
-    int wc = 0;
-    while( (tmp = strsep(&string, " ")) ){
-        splitted[wc] = malloc(sizeof(tmp));
-        strcpy(splitted[wc], tmp);
-        wc++;
-    }
-    return wc;
-}
-
-int ex_command(char *command){
-    char **comm;
-    int wc = split(command, comm);
-
-    return 0;
-}
+int set_parent(char *path);
+int split(char *string, char **splitted);
+int ex_command(char *command);
 
 int main(int argc, char *argv[]){
     int loop = 1, c;
@@ -54,7 +26,7 @@ int main(int argc, char *argv[]){
     ITEM **dir_row;
     MENU *list;
 
-    //FILE *log = fopen("log.txt", "w");
+    FILE *log = fopen("log.txt", "w");
 
     initscr();
     getmaxyx(stdscr, h, w);
@@ -151,7 +123,7 @@ int main(int argc, char *argv[]){
                 curs_set(1);
                 echo();
                 wscanw(command_win, "%s", command);
-                ex_command(command);
+                fprintf(log, "%d\n", ex_command(command));
                 wrefresh(command_win);
                 //fprintf(log, "insert: %s\n", command);
             }
@@ -177,6 +149,37 @@ int main(int argc, char *argv[]){
 
     delwin(finder);
     endwin();
-    //fclose(log);
+    fclose(log);
     return 0;
+}
+//Use set_parent to set parent dir in path
+int set_parent(char *path){
+    int len = strlen(path);
+    if(len == 1)
+        return 0;
+    for(int i = len-2; i >= 0; i--){
+        if(path[i] == '/'){
+            path[i+1] = '\0';
+            return 0;
+        }
+    }
+    return 1;
+}
+
+int split(char *string, char **splitted){
+    char *tmp;
+    int wc = 0;
+    while( (tmp = strsep(&string, " ")) ){
+        splitted[wc] = malloc(sizeof(tmp));
+        strcpy(splitted[wc], tmp);
+        wc++;
+    }
+    return wc;
+}
+
+int ex_command(char *command){
+    char **comm;
+    int wc = split(command, comm);
+
+    return wc;
 }
