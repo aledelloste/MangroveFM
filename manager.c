@@ -18,7 +18,21 @@ int set_parent(char *path){
     return 1;
 }
 
+int split(char *string, char **splitted){
+    char *tmp;
+    int wc = 0;
+    while( (tmp = strsep(&string, " ")) ){
+        splitted[wc] = malloc(sizeof(tmp));
+        strcpy(splitted[wc], tmp);
+        wc++;
+    }
+    return wc;
+}
+
 int ex_command(char *command){
+    char **comm;
+    int wc = split(command, comm);
+
     return 0;
 }
 
@@ -72,6 +86,7 @@ int main(int argc, char *argv[]){
                 }
                 sub[n_in_dir] = calloc(256, sizeof(char));
                 strcpy(sub[n_in_dir], dir_content->d_name);
+
             }
             // for (size_t i = 0; i < n_in_dir; i++) {
             //     printf("%s\n", sub[i]);
