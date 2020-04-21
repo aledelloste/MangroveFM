@@ -4,6 +4,8 @@
 #include <dirent.h>
 #include <string.h>
 
+int show_hidden = 1;
+
 int set_parent(char *path);
 int split(char *string, char **splitted);
 int ex_command(char *command);
@@ -26,7 +28,7 @@ int main(int argc, char *argv[]){
     ITEM **dir_row;
     MENU *list;
 
-    FILE *log = fopen("log.txt", "w");
+    //FILE *log = fopen("log.txt", "w");
 
     initscr();
     getmaxyx(stdscr, h, w);
@@ -65,7 +67,11 @@ int main(int argc, char *argv[]){
             // }
             dir_row = (ITEM **)calloc(n_in_dir + 1, sizeof(ITEM *));
             for(int i = 0; i < n_in_dir; i++){
-                dir_row[i] = new_item(sub[i], "");
+                if(!show_hidden){
+                    if(sub[i][0]!='.')
+                        dir_row[i] = new_item(sub[i], "");
+                }else
+                    dir_row[i] = new_item(sub[i], "");
             }
             dir_row[n_in_dir] = (ITEM *)NULL;
 
@@ -122,8 +128,10 @@ int main(int argc, char *argv[]){
                 wprintw(command_win, "Command: ");
                 curs_set(1);
                 echo();
-                wscanw(command_win, "%s", command);
-                fprintf(log, "%d\n", ex_command(command));
+                wscanw(command_win, "%[a-z0-9 ]", command);
+                fprintf(stderr, "Command: %s\n", command);
+                ex_command(command);
+                //fprintf(log, "%d\n", ex_command(command));
                 wrefresh(command_win);
                 //fprintf(log, "insert: %s\n", command);
             }
@@ -149,9 +157,10 @@ int main(int argc, char *argv[]){
 
     delwin(finder);
     endwin();
-    fclose(log);
+    //fclose(log);
     return 0;
 }
+
 //Use set_parent to set parent dir in path
 int set_parent(char *path){
     int len = strlen(path);
@@ -178,8 +187,21 @@ int split(char *string, char **splitted){
 }
 
 int ex_command(char *command){
-    char **comm;
-    int wc = split(command, comm);
-
-    return wc;
+    char *comm;
+    comm = strtok(command, " ");
+    fprintf(stderr, "%s\n", comm);
+    if(!strcmp(comm, "show")){
+        comm = strtok(NULL, " ");
+        fprintf(stderr, "%s\n", comm);
+        if(!strcmp(comm, "hidden")){
+            show_hidden = 1;
+        }
+    }else if(!strcmp(comm, "hide")){
+        comm = strtok(NULL, " ");
+        fprintf(stderr, "%s\n", comm);
+        if(!strcmp(comm, "hidden")){
+            show_hidden = 0;
+        }
+    }
+    return 0;
 }
