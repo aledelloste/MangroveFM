@@ -3,12 +3,15 @@
 #include <menu.h>
 #include <dirent.h>
 #include <string.h>
+#include <unistd.h>
 
 //Global variables
 int show_hidden = 1;
+int clear_command_timer = 2;    //in seconds
+WINDOW *finder, *path_win, *command_win;
 
 int set_parent(char *path);
-int split(char *string, char **splitted);
+void clear_command (int signum);
 int ex_command(char *command);
 
 int main(int argc, char *argv[]){
@@ -25,9 +28,10 @@ int main(int argc, char *argv[]){
     char *selected;
     char *command = calloc(10, sizeof(char));
 
-    WINDOW *finder, *path_win, *command_win;
     ITEM **dir_row;
     MENU *list;
+
+    signal (SIGALRM, clear_command);
 
     initscr();
     getmaxyx(stdscr, h, w);
@@ -146,6 +150,7 @@ int main(int argc, char *argv[]){
                 wrefresh(command_win);
                 if(ex_command(command)){
                     wprintw(command_win, "Command not found");
+                    alarm(clear_command_timer);
                 }
                 wrefresh(command_win);
             }
@@ -155,8 +160,10 @@ int main(int argc, char *argv[]){
 
             unpost_menu(list);
         }else{
+            werase(command_win);
             wprintw(command_win, "%s is not a directory", selected);
             wrefresh(command_win);
+            alarm(clear_command_timer);
             set_parent(path);
         }
     }
@@ -170,6 +177,11 @@ int main(int argc, char *argv[]){
     delwin(finder);
     endwin();
     return 0;
+}
+
+void clear_command (int signum){
+    werase(command_win);
+    wrefresh(command_win);
 }
 
 //Use set_parent to set parent dir in path
