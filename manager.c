@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <string.h>
 
+//Global variables
 int show_hidden = 1;
 
 int set_parent(char *path);
@@ -27,8 +28,6 @@ int main(int argc, char *argv[]){
     WINDOW *finder, *path_win, *command_win;
     ITEM **dir_row;
     MENU *list;
-
-    //FILE *log = fopen("log.txt", "w");
 
     initscr();
     getmaxyx(stdscr, h, w);
@@ -143,10 +142,11 @@ int main(int argc, char *argv[]){
                 echo();
                 wscanw(command_win, "%[a-z0-9 ]", command);
                 fprintf(stderr, "Command: %s\n", command);
-                ex_command(command);
-                //fprintf(log, "%d\n", ex_command(command));
+                if(ex_command(command)){
+                    wprintw(command_win, "Comand not found");
+                    wrefresh(command_win);
+                }
                 wrefresh(command_win);
-                //fprintf(log, "insert: %s\n", command);
             }
 
             if(c == 'q')
@@ -170,7 +170,6 @@ int main(int argc, char *argv[]){
 
     delwin(finder);
     endwin();
-    //fclose(log);
     return 0;
 }
 
@@ -188,17 +187,7 @@ int set_parent(char *path){
     return 1;
 }
 
-int split(char *string, char **splitted){
-    char *tmp;
-    int wc = 0;
-    while( (tmp = strsep(&string, " ")) ){
-        splitted[wc] = malloc(sizeof(tmp));
-        strcpy(splitted[wc], tmp);
-        wc++;
-    }
-    return wc;
-}
-
+//Parsing and execution of commands
 int ex_command(char *command){
     char *comm;
     comm = strtok(command, " ");
@@ -210,13 +199,15 @@ int ex_command(char *command){
         fprintf(stderr, "%s\n", comm);
         if(!strcmp(comm, "hidden")){
             show_hidden = 1;
+            return 0;
         }
     }else if(!strcmp(comm, "hide")){
         comm = strtok(NULL, " ");
         fprintf(stderr, "%s\n", comm);
         if(!strcmp(comm, "hidden")){
             show_hidden = 0;
+            return 0;
         }
     }
-    return 0;
+    return -1;
 }
