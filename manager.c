@@ -142,9 +142,10 @@ int main(int argc, char *argv[]){
                 echo();
                 wscanw(command_win, "%[a-z0-9 ]", command);
                 fprintf(stderr, "Command: %s\n", command);
+                werase(command_win);
+                wrefresh(command_win);
                 if(ex_command(command)){
-                    wprintw(command_win, "Comand not found");
-                    wrefresh(command_win);
+                    wprintw(command_win, "Command not found");
                 }
                 wrefresh(command_win);
             }
@@ -153,8 +154,6 @@ int main(int argc, char *argv[]){
                 loop = 0;
 
             unpost_menu(list);
-            werase(command_win);
-            wrefresh(command_win);
         }else{
             wprintw(command_win, "%s is not a directory", selected);
             wrefresh(command_win);
@@ -189,25 +188,38 @@ int set_parent(char *path){
 
 //Parsing and execution of commands
 int ex_command(char *command){
-    char *comm;
-    comm = strtok(command, " ");
-    if(!comm)
+    char **comm = calloc(1, sizeof(char*));
+    char *tmp;
+
+    tmp = strtok(command, " ");
+    if(!tmp)
         return -1;
-    fprintf(stderr, "%s\n", comm);
-    if(!strcmp(comm, "show")){
-        comm = strtok(NULL, " ");
-        fprintf(stderr, "%s\n", comm);
-        if(!strcmp(comm, "hidden")){
-            show_hidden = 1;
-            return 0;
+    comm[0] = calloc(strlen(tmp), sizeof(char));
+    strcpy(comm[0], tmp);
+    int i = 0;
+    while((tmp = strtok(NULL, " "))){
+        i++;
+        comm = realloc(comm, i*sizeof(char*));
+        comm[i] = calloc(strlen(tmp), sizeof(char));
+        strcpy(comm[i], tmp);
+    }
+
+    //Command selection
+    if(!strcmp(comm[0], "show")){
+        if(comm[1]){
+            if(!strcmp(comm[1], "hidden")){
+                show_hidden = 1;
+                return 0;
+            }
         }
-    }else if(!strcmp(comm, "hide")){
-        comm = strtok(NULL, " ");
-        fprintf(stderr, "%s\n", comm);
-        if(!strcmp(comm, "hidden")){
-            show_hidden = 0;
-            return 0;
+    }else if(!strcmp(comm[0], "hide")){
+        if(comm[1]){
+            if(!strcmp(comm[1], "hidden")){
+                show_hidden = 0;
+                return 0;
+            }
         }
     }
+
     return -1;
 }
