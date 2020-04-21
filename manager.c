@@ -62,16 +62,29 @@ int main(int argc, char *argv[]){
                 strcpy(sub[n_in_dir], dir_content->d_name);
 
             }
-            // for (size_t i = 0; i < n_in_dir; i++) {
-            //     printf("%s\n", sub[i]);
-            // }
-            dir_row = (ITEM **)calloc(n_in_dir + 1, sizeof(ITEM *));
-            for(int i = 0; i < n_in_dir; i++){
-                if(!show_hidden){
-                    if(sub[i][0]!='.')
-                        dir_row[i] = new_item(sub[i], "");
-                }else
+            for(int i = 0; i < n_in_dir; i++)
+                fprintf(stderr, "%s\n", sub[i]);
+            if(!show_hidden){
+                int hidden = 0;
+                for(int i = 0; i < n_in_dir; i++){
+                    if(!strcmp(sub[i], "."))
+                        ;
+                    else if(!strcmp(sub[i], ".."))
+                        ;
+                    else if(sub[i][0] == '.')
+                        hidden++;
+                }
+                dir_row = (ITEM **)calloc(n_in_dir - hidden + 1, sizeof(ITEM *));
+                dir_row[0] = new_item(sub[0], "");  //.
+                dir_row[1] = new_item(sub[1], "");  //..
+                for(int i = 2, j = hidden+2; j < n_in_dir; i++, j++){
+                    dir_row[i] = new_item(sub[j], "");
+                }
+            }else{
+                dir_row = (ITEM **)calloc(n_in_dir + 1, sizeof(ITEM *));
+                for(int i = 0; i < n_in_dir; i++){
                     dir_row[i] = new_item(sub[i], "");
+                }
             }
             dir_row[n_in_dir] = (ITEM *)NULL;
 
@@ -189,6 +202,8 @@ int split(char *string, char **splitted){
 int ex_command(char *command){
     char *comm;
     comm = strtok(command, " ");
+    if(!comm)
+        return -1;
     fprintf(stderr, "%s\n", comm);
     if(!strcmp(comm, "show")){
         comm = strtok(NULL, " ");
