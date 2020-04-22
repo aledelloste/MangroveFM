@@ -8,11 +8,12 @@
 //Global variables
 int show_hidden = 1;
 int clear_command_timer = 2;    //in seconds
-WINDOW *finder, *path_win, *command_win;
+WINDOW *finder, *path_win, *command_win, *info_win;
 
 int set_parent(char *path);
 void clear_command (int signum);
 int ex_command(char *command);
+void write_path_win(char *string);
 
 int main(int argc, char *argv[]){
     int loop = 1, c;
@@ -38,7 +39,8 @@ int main(int argc, char *argv[]){
 	keypad(stdscr, TRUE);
 
     path_win = newwin(1, COLS, 0, 0);
-    finder = newwin(LINES-3, COLS-20, 1, 0);
+    finder = newwin(LINES-3, COLS/2, 1, 0);
+    info_win = newwin(LINES-3, COLS/2, 1, (COLS/2)+1);
     command_win = newwin(3, COLS, LINES-2, 0);
     keypad(finder, TRUE);
 
@@ -47,9 +49,7 @@ int main(int argc, char *argv[]){
         noecho();
         curs_set(0);
 
-        werase(path_win);
-        mvwprintw(path_win, 0, 0, "%s", path);
-        wrefresh(path_win);
+        write_path_win(path);
 
         box(finder, '|', '-');
 
@@ -179,11 +179,6 @@ int main(int argc, char *argv[]){
     return 0;
 }
 
-void clear_command (int signum){
-    werase(command_win);
-    wrefresh(command_win);
-}
-
 //Use set_parent to set parent dir in path
 int set_parent(char *path){
     int len = strlen(path);
@@ -234,4 +229,16 @@ int ex_command(char *command){
     }
 
     return -1;
+}
+
+//Write string to path_win and refresh
+void write_path_win(char *string){
+    werase(path_win);
+    mvwprintw(path_win, 0, 0, "%s", string);
+    wrefresh(path_win);
+}
+
+void clear_command (int signum){
+    werase(command_win);
+    wrefresh(command_win);
 }
