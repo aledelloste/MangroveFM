@@ -14,6 +14,7 @@ int set_parent(char *path);
 void clear_command (int signum);
 int ex_command(char *command);
 void write_path_win(char *string);
+void help_page();
 
 int main(int argc, char *argv[]){
     int loop = 1, c;
@@ -140,6 +141,7 @@ int main(int argc, char *argv[]){
                 set_parent(path);
             }
             if(c == 'c'){
+                alarm(0);
                 werase(command_win);
                 wprintw(command_win, "Command: ");
                 curs_set(1);
@@ -226,9 +228,62 @@ int ex_command(char *command){
                 return 0;
             }
         }
+    }else if(!strcmp(comm[0], "help")){
+        help_page();
+        return 0;
     }
 
     return -1;
+}
+
+//Open help page
+void help_page(){
+    char *selected;
+    int c;
+
+    write_path_win("HELP [press q to exit this page]");
+    werase(finder);
+
+    ITEM **com_row;
+    MENU *list;
+    com_row = (ITEM **)calloc(3 + 1, sizeof(ITEM *));
+    com_row[0] = new_item("show", "");
+    com_row[1] = new_item("hide", "");
+    com_row[2] = new_item("help", "");
+
+    com_row[3] = (ITEM *)NULL;
+
+    list = new_menu(com_row);
+    set_menu_win(list, finder);
+    set_menu_mark(list, " * ");
+    set_menu_format(list, LINES-4, 1);
+    wmove(finder, 2, 0);
+    post_menu(list);
+    wrefresh(finder);
+
+    while((c = wgetch(finder)) != 'q'){
+        switch (c) {
+            case KEY_UP:
+            case 'u':
+                menu_driver(list, REQ_UP_ITEM);
+            break;
+            case KEY_DOWN:
+            case 'd':
+                menu_driver(list, REQ_DOWN_ITEM);
+            break;
+        }
+        if(c == 10){
+            selected = (char *)item_name(current_item(list));
+            mvwprintw(info_win, 2, 2, "%s", selected);
+            wrefresh(info_win);
+
+        }
+        wrefresh(finder);
+    }
+    werase(info_win);
+    wrefresh(info_win);
+
+    unpost_menu(list);
 }
 
 //Write string to path_win and refresh
