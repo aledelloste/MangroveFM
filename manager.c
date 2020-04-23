@@ -4,6 +4,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <unistd.h>
+#include <sys/stat.h>
 
 //Global variables
 int show_hidden = 1;
@@ -22,8 +23,10 @@ int main(int argc, char *argv[]){
 
     int path_size = 20;
     char *path = calloc(path_size, sizeof(char));
+    char *next_path = calloc(path_size, sizeof(char));
     strcpy(path, "/");
     DIR *cur_dir;
+    struct stat *cur_stat, *sel_stat = malloc(sizeof(struct stat));
     struct dirent *dir_content = malloc(sizeof(struct dirent));
     int dir_size = 20, n_in_dir;
     char **sub = calloc(dir_size, sizeof(char *));
@@ -55,6 +58,7 @@ int main(int argc, char *argv[]){
         box(finder, '|', '-');
 
         cur_dir = opendir(path);
+        stat(path, cur_stat);
         if(cur_dir){
             //Allocate space and create sub-dir/files
             for(n_in_dir = 0; (dir_content = readdir(cur_dir)); n_in_dir++){
@@ -66,8 +70,8 @@ int main(int argc, char *argv[]){
                 strcpy(sub[n_in_dir], dir_content->d_name);
 
             }
-            for(int i = 0; i < n_in_dir; i++)
-                fprintf(stderr, "%s\n", sub[i]);
+            // for(int i = 0; i < n_in_dir; i++)        //DEBUGGING: print dir content on stderr
+            //     fprintf(stderr, "%s\n", sub[i]);
             if(!show_hidden){
                 int hidden = 0;
                 for(int i = 0; i < n_in_dir; i++){
@@ -121,17 +125,44 @@ int main(int argc, char *argv[]){
                     break;
                 }
                 wrefresh(finder);
-            }
-            if(c == 10){
+                werase(info_win);
+                wrefresh(info_win);
+
+                //Selecting file and preparing next path
                 selected = (char *)item_name(current_item(list));
                 if(strcmp(selected, ".") != 0){
                     if(strcmp(selected, "..") != 0){
-                        if((strlen(path) + strlen(selected)) == path_size-2){
+                        if((strlen(path) + strlen(selected)) >= path_size-2){
                             path_size *= 2;
                             path = realloc(path, path_size*sizeof(char));
+                            next_path = realloc(next_path, path_size*sizeof(char));
                         }
-                        strcat(path, selected);
-                        strcat(path, "/");
+
+                        strcpy(next_path, path);
+                        strcat(next_path, selected);
+                        strcat(next_path, "/");
+                        fprintf(stderr, "selected: %s\n", selected);
+                        fprintf(stderr, "path: %s\n", path);
+                        fprintf(stderr, "next_path: %s\n", next_path);
+
+                        stat(next_path, sel_stat);
+                        mvwprintw(info_win, 2, 2, "Inode numb: %d", sel_stat->st_ino);
+                        wrefresh(info_win);
+
+                    }else{
+                        werase(info_win);
+                        wrefresh(info_win);
+                    }
+                }else{
+                    werase(info_win);
+                    wrefresh(info_win);
+                }
+
+            }
+            if(c == 10){
+                if(strcmp(selected, ".") != 0){
+                    if(strcmp(selected, "..") != 0){
+                        strcpy(path, next_path);
                     }else{
                         set_parent(path);
                     }
@@ -272,12 +303,9 @@ void help_page(){
                 menu_driver(list, REQ_DOWN_ITEM);
             break;
         }
-        if(c == 10){
-            selected = (char *)item_name(current_item(list));
-            mvwprintw(info_win, 2, 2, "%s", selected);
-            wrefresh(info_win);
-
-        }
+        selected = (char *)item_name(current_item(list));
+        mvwprintw(info_win, 2, 2, "%s", selected);
+        wrefresh(info_win);
         wrefresh(finder);
     }
     werase(info_win);
