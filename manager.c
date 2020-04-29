@@ -146,7 +146,10 @@ int main(int argc, char *argv[]){
                         fprintf(stderr, "next_path: %s\n", next_path);
 
                         stat(next_path, sel_stat);
-                        mvwprintw(info_win, 2, 2, "Inode numb: %d", sel_stat->st_ino);
+                        mvwprintw(info_win, 2, 2, "Inode number: %d", sel_stat->st_ino);
+                        mvwprintw(info_win, 4, 2, "File size: %d B", sel_stat->st_size);
+                        mvwprintw(info_win, 6, 2, "Last access: %d s since epoch", sel_stat->st_atimespec.tv_sec);
+                        mvwprintw(info_win, 8, 2, "Last modification: %d s since epoch", sel_stat->st_mtimespec.tv_sec);
                         wrefresh(info_win);
 
                     }else{
