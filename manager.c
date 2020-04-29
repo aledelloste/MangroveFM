@@ -16,6 +16,7 @@ void clear_command (int signum);
 int ex_command(char *command);
 void write_path_win(char *string);
 void help_page();
+void print_help(char *command);
 
 int main(int argc, char *argv[]){
     int loop = 1, c;
@@ -307,7 +308,8 @@ void help_page(){
             break;
         }
         selected = (char *)item_name(current_item(list));
-        mvwprintw(info_win, 2, 2, "%s", selected);
+        mvwprintw(info_win, 0, 2, "%s", selected);
+        print_help(selected);
         wrefresh(info_win);
         wrefresh(finder);
     }
@@ -315,6 +317,24 @@ void help_page(){
     wrefresh(info_win);
 
     unpost_menu(list);
+}
+
+void print_help(char *command){
+    werase(info_win);
+    if(!strcmp(command, "show")){
+        mvwprintw(info_win, 2, 2, "Syntax: show <arg>");
+        mvwprintw(info_win, 3, 2, "Is used to set the visibility of the argument.");
+        mvwprintw(info_win, 4, 2, "Possible args:\n\thidden: hidden files\n\t");
+    }
+    if(!strcmp(command, "hide")){
+        mvwprintw(info_win, 2, 2, "Syntax: hide <arg>");
+        mvwprintw(info_win, 3, 2, "Is used to unset the visibility of the argument.");
+        mvwprintw(info_win, 4, 2, "Possible args:\n\thidden: hidden files\n\t");
+    }
+    if(!strcmp(command, "help")){
+        mvwprintw(info_win, 2, 2, "help command shows this help page.");
+        mvwprintw(info_win, 3, 2, "Nothing else.");
+    }
 }
 
 //Write string to path_win and refresh
